@@ -1,0 +1,13 @@
+package io.watch.server;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class HadestackNetflixCloudServerApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}

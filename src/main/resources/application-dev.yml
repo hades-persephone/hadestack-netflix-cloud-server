@@ -16,7 +16,7 @@ spring:
       compression-type: ${KAFKA_PRODUCER_COMPRESSION:lz4}
 
       key-serializer: ${KAFKA_PRODUCER_KEY_SERIALIZER:org.apache.kafka.common.serialization.StringSerializer}
-      value-serializer: ${KAFKA_PRODUCER)VALUE)SERIALIZER:org.apache.springframework.kafka.support.serializer.JsonSerializer}
+      value-serializer: ${KAFKA_PRODUCER_VALUE_SERIALIZER:org.springframework.kafka.support.serializer.JsonSerializer}
 
       transaction-id-prefix: ${KAFKA_PRODUCER_TRANSACTION_PREFIX:${spring.application.name}-tx-}
       properties:
@@ -34,9 +34,7 @@ spring:
 
         spring.json.add.type.header: ${KAFKA_JSON_ADD_TYPE_HEADERS:false}
         spring.json.type.mapping: ${KAFKA_JSON_TYPE_MAPPING:}
-
     consumer:
-      group-id: ${KAFKA_CONSUMER_GROUP_ID:${spring.application.name}-consumer-group}
       client-id: ${KAFKA_CONSUMER_CLIENT_ID:${spring.application.name}-consumer}
 
       enable-auto-commit: ${KAFKA_CONSUMER_AUTO_COMMIT:false}
@@ -48,24 +46,223 @@ spring:
       fetch-min-size: ${KAFKA_CONSUMER_FETCH_MIN_SIZE:50000}
       fetch-max-wait: ${KAFKA_CONSUMER_FETCH_MAX_WAIT:500}
       max-poll-records: ${KAFKA_CONSUMER_MAX_POLL_RECORDS:1000}
-      max-poll-interval: ${KAFKA_CONSUMER_MAX_POLL_INTERVAL:600000}
 
-      isolation-level: ${KAFKA_CONSUMER_ISOLATION_LEVEL:read_commited}
+      isolation-level: ${KAFKA_CONSUMER_ISOLATION_LEVEL:read_committed}
 
-      key-deserializer: ${KAFKA_CONSUMER_KEY_DESERIALIZER:org.apache.kafka.common.serialization.StringDeserializer}
-      value-deserializer: ${KAFKA_CONSUMER_VALUE_DESERIALIZER:org.springframework.kafka.support.serializer.JsonDeserializer}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
       properties:
         connections.max.idle.ms: ${KAFKA_CONSUMER_CONN_MAX_IDLE:600000}
         reconnect.backoff.ms: ${KAFKA_CONSUMER_RECONNECT_BACKOFF:1000}
         reconnect.backoff.max.ms: ${KAFKA_CONSUMER_RECONNECT_BACKOFF_MAX:10000}
         metadata.max.age.ms: ${KAFKA_CONSUMER_METADATA_MAX_AGE:300000}
-
+        max-poll-interval: ${KAFKA_CONSUMER_MAX_POLL_INTERVAL:600000}
         partition.assignment.strategy: ${KAFKA_CONSUMER_ASSIGNMENT_STRATEGY:org.apache.kafka.clients.consumer.CooperativeStickyAssignor}
         request.timeout.ms: ${KAFKA_CONSUMER_REQUEST_TIMEOUT:40000}
         default.api.timeout.ms: ${KAFKA_CONSUMER_API_TIMEOUT:60000}
 
         spring.json.add.type.header: ${KAFKA_JSON_ADD_TYPE_HEADERS:false}
+
+    streams:
+      application-id: ${KAFKA_STREAMS_APP_ID:${spring.application.name}-streams}
+      bootstrap-servers: ${spring.kafka.bootstrap-servers}
+      auto-startup: ${KAFKA_STREAMS_AUTO_STARTUP:true}
+      state-dir: ${KAFKA_STREAMS_STATE_DIR:/tmp/kafka-streams}
+      properties:
+        num.stream.threads: ${KAFKA_STREAMS_NUM_THREADS:4}
+        processing.guarantee: ${KAFKA_STREAMS_PROCESSING_GUARANTEE:exactly_once_v2}
+        replication.factor: ${KAFKA_STREAMS_REPLICATION_FACTOR:3}
+        min.insync.replicas: ${KAFKA_STREAMS_MIN_INSYNC_REPLICAS:2}
+
+    admin:
+      close-timeout: ${KAFKA_ADMIN_CLOSE_TIMEOUT:30s}
+      operation-timeout: ${KAFKA_ADMIN_OPERATION_TIMEOUT:30s}
+      fail-fast: ${KAFKA_ADMIN_FAIL_FAST:false}
+
+      properties:
+        bootstrap.servers: ${spring.kafka.bootstrap-servers}
+        client.id: ${spring.application.name}-admin
+        request.timeout.ms: ${KAFKA_ADMIN_REQUEST_TIMEOUT:60000}
+        default.api.timeout.ms: ${KAFKA_ADMIN_API_TIMEOUT:60000}
+        connections.max.idle.ms: ${KAFKA_ADMIN_CONN_MAX_IDLE:300000}
+        reconnect.backoff.ms: ${KAFKA_ADMIN_RECONNECT_BACKOFF:1000}
+        reconnect.backoff.max.ms: ${KAFKA_ADMIN_RECONNECT_BACKOFF_MAX:10000}
+        retries: ${KAFKA_ADMIN_RETRIES:5}
+        retry.backoff.ms: ${KAFKA_ADMIN_RETRY_BACKOFF:1000}
+
+    template:
+      default-topic: ${KAFKA_TEMPLATE_DEFAULT_TOPIC:}
+
+    listener:
+      concurrency: ${KAFKA_LISTENER_CONCURRENCY:10}
+      ack-mode: ${KAFKA_LISTENER_ACK_MODE:manual_immediate}
+      missing-topics-fatal: ${KAFKA_LISTENER_MISSING_TOPICS_FATAL:false}
+      immediate-stop: ${KAFKA_LISTENER_IMMEDIATE_STOP:false}
+      idle-event-interval: ${KAFKA_LISTENER_IDLE_EVENT_INTERVAL:30s}
+      idle-partition-event-interval: ${KAFKA_LISTENER_IDLE_PARTITION_EVENT_INTERVAL:}
+      monitor-interval: ${KAFKA_LISTENER_MONITOR_INTERVAL:30s}
+      poll-timeout: ${KAFKA_LISTENER_POLL_TIMEOUT:10000}
+      log-container-config: ${KAFKA_LISTENER_LOG_CONTAINER_CONFIG:false}
+#
+#  data:
+#    redis:
+#      host: ${REDIS_HOST:localhost}
+#      port: ${REDIS_PORT:6379}
+#      password: ${REDIS_PASSWORD:}
+#      database: ${REDIS_DATABASE:0}
+#
+#      lettuce:
+#        pool:
+#          max-active: ${REDIS_POOL_MAX_ACTIVE:20}
+#          max-idle: ${REDIS_POOL_MAX_IDLE:10}
+#          min-idle: ${REDIS_POOL_MIN_IDLE:2}
+#          max-wait: ${REDIS_POOL_MAX_WAIT:2000ms}
+#          time-between-eviction-runs: ${REDIS_POOL_EVICTION_RUNS:30s}
+#
+#        shutdown-timeout: ${REDIS_LETTUCE_SHUTDOWN_TIMEOUT:100ms}
+#
+#        cluster:
+#          refresh:
+#            adaptive: ${REDIS_CLUSTER_ADAPTIVE_REFRESH:true}
+#            period: ${REDIS_CLUSTER_REFRESH_PERIOD:30s}
+#
+#      connect-timeout: ${REDIS_CONNECT_TIMEOUT:2000ms}
+#      timeout: ${REDIS_TIMEOUT:2000ms}
+#
+#      sentinel:
+#        master: ${REDIS_SENTINEL_MASTER:}
+#        nodes: ${REDIS_SENTINEL_NODES:}
+#        password: ${REDIS_SENTINEL_PASSWORD:}
+#
+#      cluster:
+#        nodes: ${REDIS_CLUSTER_NODES:}
+#        max-redirects: ${REDIS_CLUSTER_MAX_REDIRECTS:3}
+#
+#  cache:
+#    type: ${SPRING_CACHE_TYPE:redis}
+#    redis:
+#      time-to-live: ${REDIS_CACHE_TTL:3600000}
+#      use-key-prefix: ${REDIS_CACHE_USE_KEY_PREFIX:true}
+#      key-prefix: ${REDIS_CACHE_KEY_PREFIX:${spring.application.name}:}
+#      cache-null-values: ${REDIS_CACHE_NULL_VALUES:false}
+#      enable-statistics: ${REDIS_CACHE_ENABLE_STATISTICS:true}
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/hades-persephone/hadestack-netflix-cloud-server.git
+          clone-on-start: true
+          search-paths: config
+          username: phamvanhiep.work@gmail.com
+          password: phamvanhiep@dev123
+    stream:
+      default:
+        group: ${SPRING_CLOUD_GROUP_KAFKA:${spring.application.name}-cloud-group}
+redis:
+  connection:
+    url: ${REDIS_URL:redis://localhost:6379}
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    database: ${REDIS_DATABASE:0}
+    connect-timeout: ${REDIS_CONNECT_TIMEOUT:2000}
+    read-timeout: ${REDIS_READ_TIMEOUT:2000}
+    password: ${REDIS_PASSWORD:}
+
+  pool:
+    lettuce:
+      pool:
+        max-active: ${REDIS_POOL_MAX_ACTIVE:8}
+        max-idle: ${REDIS_POOL_MAX_IDLE:8}
+        min-idle: ${REDIS_POOL_MIN_IDLE:0}
+        max-wait: ${REDIS_POOL_MAX_WAIT:-1ms}
+        time-between-eviction-runs: ${REDIS_POOL_TIME_BETWEEN_EVICTION:30s}
+
+  config:
+    default-ttl: ${REDIS_DEFAULT_TTL:3600}
+    max-ttl: ${REDIS_MAX_TTL:86400}
+    key-patterns:
+      session: ${REDIS_KEY_SESSION_PATTERN:session:*}
+      cache: ${REDIS_KEY_CACHE_PATTERN:cache:*}
+      kafka-offset: ${REDIS_KEY_KAFKA_OFFSET_PATTERN:kafka:offset:*}
+      user-data: ${REDIS_KEY_USER_DATA_PATTERN:user:*}
+      rate-limit: ${REDIS_KEY_RATE_LIMIT_PATTERN:ratelimit:*}
+      distributed-lock: ${REDIS_KEY_LOCK_PATTERN:lock:*}
+
+    key-prefix: ${REDIS_KEY_PREFIX:${spring.application.name:app}:${spring.profiles.active:default}:}
+
+    serialization:
+      key-serializer: ${REDIS_KEY_SERIALIZER:string}
+      value-serializer: ${REDIS_VALUE_SERIALIZER:json}
+      hash-key-serializer: ${REDIS_HASH_KEY_SERIALIZER:string}
+      hash-value-serializer: ${REDIS_HASH_VALUE_SERIALIZER:json}
+      compression:
+        enabled: ${REDIS_COMPRESSION_ENABLED:false}
+        threshold: ${REDIS_COMPRESSION_THRESHOLD:1024}
+
+    pubsub:
+      patterns:
+        - ${REDIS_PUBSUB_PATTERN_1:notification:*}
+        - ${REDIS_PUBSUB_PATTERN_2:event:*}
+        - ${REDIS_PUBSUB_PATTERN_3:audit:*}
+      channels:
+        - ${REDIS_PUBSUB_CHANNEL_1:system-notifications}
+        - ${REDIS_PUBSUB_CHANNEL_2:user-events}
+        - ${REDIS_PUBSUB_CHANNEL_3:health-checks}
+      connection-pool-size: ${REDIS_PUBSUB_POOL_SIZE:2}
+
+    lock:
+      default-timeout: ${REDIS_LOCK_DEFAULT_TIMEOUT:30000}
+      max-timeout: ${REDIS_LOCK_MAX_TIMEOUT:300000}
+      retry-attempts: ${REDIS_LOCK_RETRY_ATTEMPTS:3}
+      retry-delay: ${REDIS_LOCK_RETRY_DELAY:1000}
+      refresh-interval: ${REDIS_LOCK_REFRESH_INTERVAL:10000}
+
+    cache:
+      enabled: ${REDIS_CACHE_ENABLED:true}
+      caches:
+        default:
+          ttl: ${REDIS_CACHE_DEFAULT_TTL:600}
+        user-cache:
+          ttl: ${REDIS_CACHE_USER_TTL:1800}
+        config-cache:
+          ttl: ${REDIS_CACHE_CONFIG_TTL:3600}
+
+      enable-statistics: ${REDIS_CACHE_ENABLE_STATISTICS:true}
+
+    rate-limit:
+      enabled: ${REDIS_RATE_LIMIT_ENABLED:false}
+      default:
+        requests: ${REDIS_RATE_LIMIT_DEFAULT_REQUESTS:100}
+        duration: ${REDIS_RATE_LIMIT_DEFAULT_DURATION:3600}
+
+  session:
+    enabled: ${REDIS_SESSION_ENABLED:false}
+    timeout: ${REDIS_SESSION_TIMEOUT:1800}
+    flush-mode: ${REDIS_SESSION_FLUSH_MODE:on_save}
+    save-mode: ${REDIS_SESSION_SAVE_MODE:on_set_attribute}
+    namespace: ${REDIS_SESSION_NAMESPACE:spring:session}
+    cookie:
+      name: ${REDIS_SESSION_COOKIE_NAME:JSESSIONID}
+      path: ${REDIS_SESSION_COOKIE_PATH:/}
+      domain: ${REDIS_SESSION_COOKIE_DOMAIN:}
+      max-age: ${REDIS_SESSION_COOKIE_MAX_AGE:}
+      http-only: ${REDIS_SESSION_COOKIE_HTTP_ONLY:true}
+      secure: ${REDIS_SESSION_COOKIE_SECURE:false}
+      same-site: ${REDIS_SESSION_COOKIE_SAME_SITE:lax}
+
+  health:
+    enabled: ${REDIS_HEALTH_ENABLED:true}
+    timeout: ${REDIS_HEALTH_TIMEOUT:5000}
+
+  monitoring:
+    metrics:
+      enabled: ${REDIS_METRICS_ENABLED:true}
+      export-to-micrometer: ${REDIS_METRICS_MICROMETER:true}
+    tracing:
+      enabled: ${REDIS_TRACING_ENABLED:false}
+      include-args: ${REDIS_TRACING_INCLUDE_ARGS:false}
 
 
 logging:
@@ -76,6 +273,10 @@ logging:
     org.springframework.kafka.core: ${KAFKA_CORE_LOG_LEVEL:INFO}
     org.springframework.kafka.config: ${KAFKA_CONFIG_LOG_LEVEL:INFO}
     org.springframework.kafka.transaction: ${KAFKA_TRANSACTION_LOG_LEVEL:INFO}
+
+    org.springframework.data.redis: ${REDIS_LOG_LEVEL:INFO}
+    io.lettuce.core: ${REDIS_LETTUCE_LOG_LEVEL:WARN}
+    redis.clients.jedis: ${REDIS_JEDIS_LOG_LEVEL:WARN}
   pattern:
     console: ${KAFKA_LOG_PATTERN:%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n}
 
@@ -93,3 +294,62 @@ management:
         enabled: ${MANAGEMENT_HEALTH_PROBE:true}
     kafka:
       enabled: ${MANAGEMENT_HEALTH_ENABLED:true}
+    metrics:
+      access: ${MANAGEMENT_METRICS_ENABLED:read_only}
+
+  health:
+    kafka:
+      enabled: ${MANAGEMENT_HEALTH_KAFKA_ENABLED:true}
+      response-timeout: ${MANAGEMENT_HEALTH_KAFKA_TIMEOUT:10s}
+
+  metrics:
+    distribution:
+      percentiles-histogram:
+        kafka.producer.record.send.total: true
+        kafka.consumer.fetch.latency.avg: true
+      percentiles:
+        kafka.producer.record.send.total: 0.5, 0.95, 0.99
+        kafka.consumer.fetch.latency.avg: 0.5, 0.95, 0.99
+  prometheus:
+    metrics:
+      export:
+        enabled: ${MANAGEMENT_PROMETHEUS_ENABLED:true}
+        step: ${MANAGEMENT_PROMETHEUS_STEP:1m}
+        descriptions: ${MANAGEMENT_PROMETHEUS_DESCRIPTIONS:true}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      kafka-producer:
+        register-health-indicator: ${CIRCUIT_BREAKER_HEALTH_INDICATOR:true}
+        sliding-window-size: ${CIRCUIT_BREAKER_SLIDING_WINDOW:10}
+        minimum-number-of-calls: ${CIRCUIT_BREAKER_MIN_CALLS:5}
+        failure-rate-threshold: ${CIRCUIT_BREAKER_FAILURE_RATE:50}
+        wait-duration-in-open-state: ${CIRCUIT_BREAKER_WAIT_DURATION:30s}
+        permitted-number-of-calls-in-half-open-state: ${CIRCUIT_BREAKER_HALF_OPEN_CALLS:3}
+
+      redis:
+        register-health-indicator: ${REDIS_CIRCUIT_BREAKER_HEALTH_INDICATOR:true}
+        sliding-window-size: ${REDIS_CIRCUIT_BREAKER_SLIDING_WINDOW:10}
+        minimum-number-of-calls: ${REDIS_CIRCUIT_BREAKER_MIN_CALLS:5}
+        failure-rate-threshold: ${REDIS_CIRCUIT_BREAKER_FAILURE_RATE:50}
+        wait-duration-in-open-state: ${REDIS_CIRCUIT_BREAKER_WAIT_DURATION:30s}
+        permitted-number-of-calls-in-half-open-state: ${REDIS_CIRCUIT_BREAKER_HALF_OPEN_CALLS:3}
+
+  retry:
+    instances:
+      kafka-producer:
+        max-attempts: ${RETRY_MAX_ATTEMPTS:3}
+        wait-duration: ${RETRY_WAIT_DURATION:1s}
+        exponential-backoff-multiplier: ${RETRY_BACKOFF_MULTIPLIER:2}
+        retry-exceptions:
+          - org.apache.kafka.common.errors.TimeoutException
+          - org.apache.kafka.common.errors.RetriableException
+      redis:
+        max-attempts: ${REDIS_RETRY_MAX_ATTEMPTS:3}
+        wait-duration: ${REDIS_RETRY_WAIT_DURATION:500ms}
+        exponential-backoff-multiplier: ${REDIS_RETRY_BACKOFF_MULTIPLIER:2}
+        retry-exceptions:
+          - org.springframework.data.redis.RedisConnectionFailureException
+          - org.springframework.data.redis.RedisSystemException
+          - java.net.SocketTimeoutException

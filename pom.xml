@@ -32,6 +32,12 @@
             <artifactId>spring-cloud-config-server</artifactId>
             <version>4.3.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/net.i2p.crypto/eddsa -->
+        <dependency>
+            <groupId>net.i2p.crypto</groupId>
+            <artifactId>eddsa</artifactId>
+            <version>0.3.0</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -260,7 +266,12 @@
             <artifactId>kafka-avro-serializer</artifactId>
             <version>7.9.2</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.18.0</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Apache Avro -->
         <dependency>
             <groupId>org.apache.avro</groupId>
@@ -352,6 +363,9 @@
                         <include>**/*IT.java</include>
                         <include>**/*IntegrationTest.java</include>
                     </includes>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/net/bytebuddy/byte-buddy-agent/1.15.11/byte-buddy-agent-1.15.11.jar
+                    </argLine>
                 </configuration>
                 <executions>
                     <execution>
